@@ -38,18 +38,30 @@ namespace EmployeeManagement
 
             }).AddEntityFrameworkStores<AppDbContext>();
 
-            services.AddMvc(options => {
+            services.AddMvc(options =>
+            {
                 var policy = new AuthorizationPolicyBuilder()
                                  .RequireAuthenticatedUser()
                                  .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
             }).AddXmlDataContractSerializerFormatters();
 
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.AccessDeniedPath = new PathString("/Administration/AccessDenied");
+            });
+
             services.AddAuthorization(options =>
             {
                 options.AddPolicy("DeleteRolePolicy",
-                    policy => policy.RequireClaim("Delete Role")
-                                    .RequireClaim("Create Role"));
+                    policy => policy.RequireClaim("Delete Role"));
+
+                options.AddPolicy("EditRolePolicy",
+                    policy => policy.RequireAssertion(context =>
+                        context.User.IsInRole("Admin") &&
+                        context.User.HasClaim(claim => claim.Type == "Edit Role" && claim.Value == "true") ||
+                        context.User.IsInRole("Super Admin")
+                    ));
 
                 options.AddPolicy("AdminRolePolicy",
                     policy => policy.RequireRole("Admin"));
