@@ -37,7 +37,8 @@ namespace EmployeeManagement
                 options.Password.RequiredLength = 7;
                 options.Password.RequiredUniqueChars = 3;
 
-            }).AddEntityFrameworkStores<AppDbContext>();
+            }).AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
             services.AddMvc(options =>
             {
